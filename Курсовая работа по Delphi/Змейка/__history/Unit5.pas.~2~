@@ -1,0 +1,111 @@
+unit Unit5;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.Imaging.pngimage,
+  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Buttons;
+
+type
+  TForm5 = class(TForm)
+    MainMenu1: TMainMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    Image1: TImage;
+    Memo1: TMemo;
+    BitBtn1: TBitBtn;
+    procedure FormShow(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
+  private
+    procedure LoadRecords;
+  public
+    { Public declarations }
+  end;
+
+var
+  Form5: TForm5;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm5.BitBtn1Click(Sender: TObject);
+var
+  FileName: string;
+  FileHandle: TextFile;
+begin
+  FileName := 'snake_record.txt'; // имя файла, который будем очищать
+  AssignFile(FileHandle, FileName);
+  try
+    Rewrite(FileHandle); // Открываем файл в режиме записи, чтобы очистить его
+  finally
+    CloseFile(FileHandle);
+  end;
+
+  Memo1.Clear; // Очищаем Memo1
+  ShowMessage('Файл с рекордами очищен.');
+end;
+
+procedure TForm5.FormShow(Sender: TObject);
+begin
+  LoadRecords; // Загружаем записи при показе формы
+end;
+
+procedure TForm5.LoadRecords;
+var
+  FileName: string;
+  FileHandle: TextFile;
+  Line: string;
+  RecordsList: TStringList;
+begin
+  FileName := 'snake_record.txt'; // имя файла, из которого будем считывать рекорды
+  RecordsList := TStringList.Create;
+  try
+    if FileExists(FileName) then
+    begin
+      AssignFile(FileHandle, FileName);
+      Reset(FileHandle);
+      while not Eof(FileHandle) do
+      begin
+        Readln(FileHandle, Line);
+        RecordsList.Add(Line); // Добавляем каждую строку из файла в список
+      end;
+      CloseFile(FileHandle);
+
+      // Сортируем список по убыванию очков
+      RecordsList.CustomSort(
+        function (Index1, Index2: Integer): Integer
+        var
+          Score1, Score2: Integer;
+        begin
+          Score1 := StrToIntDef(Trim(Copy(RecordsList[Index1], Pos('-', RecordsList[Index1]) + 1, MaxInt)), 0);
+          Score2 := StrToIntDef(Trim(Copy(RecordsList[Index2], Pos('-', RecordsList[Index2]) + 1, MaxInt)), 0);
+          Result := CompareValue(Score2, Score1); // сортируем по убыванию
+        end
+      );
+
+      // Очищаем Memo1 и добавляем отсортированные записи
+      Memo1.Lines.BeginUpdate;
+      try
+        Memo1.Clear;
+        Memo1.Lines.AddStrings(RecordsList);
+      finally
+        Memo1.Lines.EndUpdate;
+      end;
+    end
+    else
+    begin
+      ShowMessage('Файл с рекордами не найден.');
+    end;
+  finally
+    RecordsList.Free;
+  end;
+end;
+
+
+end.
+

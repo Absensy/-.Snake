@@ -1,0 +1,61 @@
+unit Unit4;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage,
+  Vcl.Menus, Vcl.StdCtrls, Vcl.Buttons;
+
+type
+  TForm4 = class(TForm)
+    Image1: TImage;
+    MainMenu1: TMainMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    Image2: TImage;
+    BitBtn1: TBitBtn;
+    Image3: TImage;
+    procedure N4Click(Sender: TObject);
+    procedure N5Click(Sender: TObject);
+    procedure N2Click(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form4: TForm4;
+
+implementation
+
+{$R *.dfm}
+uses Unit1;
+
+procedure TForm4.BitBtn1Click(Sender: TObject);
+begin
+  Form4.Hide;
+  Form1.Show;
+end;
+
+procedure TForm4.N2Click(Sender: TObject);
+begin
+    ShowMessage(' Автор: Дашкевич Евгений ');
+end;
+
+procedure TForm4.N4Click(Sender: TObject);
+begin
+    close;
+end;
+
+procedure TForm4.N5Click(Sender: TObject);
+begin
+    ShowMessage('Версия: 1.0 ');
+end;
+
+end.

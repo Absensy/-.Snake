@@ -1,0 +1,98 @@
+unit Unit4;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage,
+  Vcl.Menus, Vcl.StdCtrls, Vcl.Buttons, MMSystem;
+
+type
+  TForm4 = class(TForm)
+    Image1: TImage;
+    MainMenu1: TMainMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    BitBtn1: TBitBtn;
+    Image3: TImage;
+    ScrollBar1: TScrollBar;
+    CheckBox1: TCheckBox;
+    Image4: TImage;
+    Image5: TImage;
+    RadioButton1: TRadioButton;
+    RadioButton2: TRadioButton;
+    RadioButton3: TRadioButton;
+    Panel1: TPanel;
+    RadioButton4: TRadioButton;
+    RadioButton5: TRadioButton;
+    RadioButton6: TRadioButton;
+    Edit1: TEdit;
+    procedure N4Click(Sender: TObject);
+    procedure N5Click(Sender: TObject);
+    procedure N2Click(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
+    procedure ScrollBar1Change(Sender: TObject);
+    procedure CreateParams(var Params: TCreateParams) ; override;
+  private
+
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form4: TForm4;
+
+implementation
+
+{$R *.dfm}
+uses Unit1;
+
+procedure TForm4.BitBtn1Click(Sender: TObject);
+begin
+  Form4.Hide;
+  Form1.Show;
+end;
+
+procedure TForm4.CheckBox1Click(Sender: TObject);
+begin
+ if CheckBox1.Checked = False then Form1.MediaPlayer1.Stop
+ else
+ if CheckBox1.Checked = True then  Form1.MediaPlayer1.Play;
+
+end;
+
+procedure TForm4.N2Click(Sender: TObject);
+begin
+    ShowMessage(' Автор: Дашкевич Евгений ');
+end;
+
+procedure TForm4.N4Click(Sender: TObject);
+begin
+    close;
+end;
+
+procedure TForm4.N5Click(Sender: TObject);
+begin
+    ShowMessage('Версия: 1.0 ');
+end;
+
+procedure TForm4.ScrollBar1Change(Sender: TObject);
+begin
+  Form1.SetVolume(ScrollBar1.Position);
+end;
+
+procedure TForm4.CreateParams(var Params: TCreateParams) ;// процедура для того чтобы ярлык в панели задач не пропадал
+begin
+  inherited;
+  Params.ExStyle := Params.ExStyle or WS_EX_APPWINDOW;
+  Params.WndParent := 0;
+end;
+
+
+
+end.

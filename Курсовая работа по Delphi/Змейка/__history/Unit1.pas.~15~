@@ -1,0 +1,76 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.StdCtrls, Vcl.Buttons,
+  Vcl.ExtCtrls, Vcl.Imaging.pngimage, Vcl.Imaging.GIFImg, Vcl.Mask;
+type
+  TForm1 = class(TForm)
+    BitBtn1: TBitBtn;
+    BitBtn2: TBitBtn;
+    BitBtn3: TBitBtn;
+    Image2: TImage;
+    Image1: TImage;
+    Image3: TImage;
+    BitBtn4: TBitBtn;
+    Panel1: TPanel;
+    BitBtn5: TBitBtn;
+    MaskEdit1: TMaskEdit;
+    procedure FormShow(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
+    procedure BitBtn5Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.dfm}
+
+uses Unit3, Unit2, Unit4;
+
+
+procedure TForm1.BitBtn1Click(Sender: TObject);
+begin
+   form1.Hide;
+   form3.Show;
+end;
+
+procedure TForm1.BitBtn2Click(Sender: TObject);
+begin
+ panel1.Visible := True;
+end;
+
+procedure TForm1.BitBtn3Click(Sender: TObject);
+begin
+  close;
+end;
+
+procedure TForm1.BitBtn5Click(Sender: TObject);
+begin
+ panel1.Visible := false;
+end;
+
+procedure TForm1.FormShow(Sender: TObject);
+
+begin
+try
+  form2.ShowModal;
+  form2.Destroy;
+except
+
+
+  end;
+
+end;
+end.
+

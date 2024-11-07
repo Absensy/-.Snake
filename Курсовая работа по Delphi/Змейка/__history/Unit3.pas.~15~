@@ -1,0 +1,295 @@
+unit Unit3;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Grids, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Menus, Vcl.Buttons, Vcl.Imaging.pngimage, Vcl.Mask, Vcl.CheckLst;
+
+type
+  TDirection = (dirUp, dirDown, dirLeft, dirRight);
+  TForm3 = class(TForm)
+    DrawGrid1: TDrawGrid;
+    Image1: TImage;
+    BitBtn2: TBitBtn;
+    BitBtn3: TBitBtn;
+    Image2: TImage;
+    Timer2: TTimer;
+    Label1: TLabel;
+    Image3: TImage;
+    MainMenu1: TMainMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    BitBtn1: TBitBtn;
+    Image4: TImage;
+    Image5: TImage;
+    Panel1: TPanel;
+    RadioGroup1: TRadioGroup;
+    procedure BitBtn1Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure DrawGrid1DrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure Timer2Timer(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure N2Click(Sender: TObject);
+    procedure N5Click(Sender: TObject);
+  private
+    { Private declarations }
+    SnakeSpeed:Integer;
+    Snake: array of TPoint;
+    Food: TPoint;
+    Score: Integer;
+    Direction: TDirection;
+    GameInitialized: Boolean;
+    procedure MoveSnake;
+    procedure GenerateFood;
+    procedure CheckCollision;
+    procedure CheckFood;
+    procedure InitializeGame;
+    procedure UpdateScore;
+    procedure SaveRecord(const Score: Integer);
+  public
+    { Public declarations }
+  end;
+
+var
+  Form3: TForm3;
+
+implementation
+
+{$R *.dfm}
+
+uses Unit1, Unit4;
+
+procedure TForm3.BitBtn1Click(Sender: TObject);
+begin
+  Form3.Hide;
+  Form1.Show;
+end;
+
+procedure TForm3.BitBtn2Click(Sender: TObject);
+begin
+  Form1.MediaPlayer1.Close;
+  Timer2.Enabled := False;
+  Close;
+end;
+
+procedure TForm3.BitBtn3Click(Sender: TObject);
+var
+  I: Integer;
+begin
+  InitializeGame;
+  for I := High(Snake) downto 1 do
+    Snake[I] := Snake[I - 1];
+  case Direction of
+    dirUp: Dec(Snake[0].Y);
+    dirDown: Inc(Snake[0].Y);
+    dirLeft: Dec(Snake[0].X);
+    dirRight: Inc(Snake[0].X);
+  end;
+end;
+
+procedure TForm3.Timer2Timer(Sender: TObject);
+begin
+  MoveSnake;
+  if GameInitialized then
+  begin
+    CheckCollision;
+    CheckFood;
+  end;
+  DrawGrid1.Repaint;
+end;
+
+procedure TForm3.DrawGrid1DrawCell(Sender: TObject; ACol, ARow: Integer;
+  Rect: TRect; State: TGridDrawState);
+var
+  I: Integer;
+begin
+  with DrawGrid1.Canvas do
+  begin
+    // Отрисовка змейки
+    for I := 0 to High(Snake) do
+    begin
+      if (ACol = Snake[I].X) and (ARow = Snake[I].Y) then
+      begin
+        Brush.Color := clGreen;
+        FillRect(Rect);
+        Exit;
+      end;
+    end;
+    // Отрисовка еды
+    if (ACol = Food.X) and (ARow = Food.Y) then
+    begin
+      Brush.Color := clRed;
+      FillRect(Rect);
+    end
+    else
+    begin
+      Brush.Color := clWhite;
+      FillRect(Rect);
+    end;
+  end;
+end;
+
+procedure TForm3.InitializeGame;
+begin
+  SetLength(Snake, 3);
+  Snake[0] := Point(14, 14); // Начальная позиция змейки
+  Direction := dirRight; // Начальное направление
+  GenerateFood;
+   case RadioGroup1.ItemIndex of
+    0: SnakeSpeed := 400;
+    1: SnakeSpeed := 200;
+    2: SnakeSpeed := 100;
+   end;
+  Timer2.Interval := SnakeSpeed;
+  //SnakeSpeed := 200;
+  //Timer2.Interval := 200; // Интервал таймера (скорость змейки)
+  Timer2.Enabled := True;
+  Score := 0;
+  UpdateScore;
+  GameInitialized := True; // Игра инициализирована
+end;
+
+procedure TForm3.FormCreate(Sender: TObject);
+begin
+  DrawGrid1.ColCount := 28;
+  DrawGrid1.RowCount := 28;
+  SetLength(Snake, 3);
+  Snake[0] := Point(14, 14); // Начальная позиция змейки
+  Direction := dirRight; // Начальное направление
+  GenerateFood;
+  SnakeSpeed := 200;
+  Timer2.Interval := 200; // Интервал таймера (скорость змейки)
+  Timer2.Enabled := True;
+  KeyPreview := True; // Для обработки нажатий клавиш
+  GameInitialized := False; // Игра еще не инициализирована
+end;
+
+procedure TForm3.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  case Key of
+    VK_UP, ord('W'): if Direction <> dirDown then Direction := dirUp;
+    VK_DOWN, ord('S'): if Direction <> dirUp then Direction := dirDown;
+    VK_LEFT, ord('A'): if Direction <> dirRight then Direction := dirLeft;
+    VK_RIGHT, ord('D'): if Direction <> dirLeft then Direction := dirRight;
+  end;
+end;
+
+procedure TForm3.MoveSnake;
+var
+  I: Integer;
+begin
+  for I := High(Snake) downto 1 do
+    Snake[I] := Snake[I - 1];
+  case Direction of
+    dirUp: Dec(Snake[0].Y);
+    dirDown: Inc(Snake[0].Y);
+    dirLeft: Dec(Snake[0].X);
+    dirRight: Inc(Snake[0].X);
+  end;
+end;
+
+procedure TForm3.N2Click(Sender: TObject);
+begin
+  close;
+end;
+
+procedure TForm3.N5Click(Sender: TObject);
+begin
+  ShowMessage('Автор: Дашкевич Евгений');
+end;
+
+procedure TForm3.CheckCollision;
+var
+  I: Integer;
+begin
+  // Проверка столкновения с границами
+  if (Snake[0].X < 0) or (Snake[0].X >= DrawGrid1.ColCount) or
+     (Snake[0].Y < 0) or (Snake[0].Y >= DrawGrid1.RowCount) then
+  begin
+    Timer2.Enabled := False;
+    ShowMessage('Игра закончена! Очки: '+IntToStr(Score));
+    SaveRecord(Score); // сохраняем рекорд при завершении игры
+  end;
+  // Проверка столкновения с самим собой
+  for I := 1 to High(Snake) do
+    if (Snake[0].X = Snake[I].X) and (Snake[0].Y = Snake[I].Y) then
+    begin
+      Timer2.Enabled := False;
+      ShowMessage('Вы проиграли! Очки: '+IntToStr(Score));
+      SaveRecord(Score); // сохраняем рекорд при завершении игры
+    end;
+end;
+
+procedure TForm3.UpdateScore;
+begin
+  Label1.Caption := IntToStr(Score);
+end;
+
+procedure TForm3.CheckFood;
+begin
+  if (Snake[0].X = Food.X) and (Snake[0].Y = Food.Y) then
+  begin
+    SetLength(Snake, Length(Snake) + 1);
+    Snake[High(Snake)] := Snake[High(Snake) - 1];
+    GenerateFood;
+    Inc(Score);
+    UpdateScore;
+    SnakeSpeed := Round(SnakeSpeed - 3);
+    Timer2.Interval := SnakeSpeed;
+  end;
+end;
+
+procedure TForm3.SaveRecord(const Score: Integer);
+var
+  FileName: string;
+  FileHandle: TextFile;
+begin
+  FileName := 'snake_record.txt'; // имя файла, в который будем сохранять рекорд
+  AssignFile(FileHandle, FileName);
+  try
+    if FileExists(FileName) then
+      Append(FileHandle)
+    else
+      Rewrite(FileHandle);
+    Writeln(FileHandle, IntToStr(Score)); // записываем рекорд в файл
+  finally
+    CloseFile(FileHandle);
+  end;
+end;
+
+procedure TForm3.GenerateFood;
+var FoodCollision: Boolean;
+I: Integer;
+begin
+  Randomize;
+  repeat
+    FoodCollision := False;
+    Food.X := Random(DrawGrid1.ColCount);
+    Food.Y := Random(DrawGrid1.RowCount);
+    for I := 0 to High(Snake) do
+    begin
+      if (Food.X = Snake[I].X) and (Food.Y = Snake[I].Y) then
+      begin
+        FoodCollision := True;
+        Break;
+      end;
+    end;
+  until not FoodCollision;
+end;
+
+procedure TForm3.FormShow(Sender: TObject);
+begin
+  DrawGrid1.Repaint;
+end;
+
+end.
+

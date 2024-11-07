@@ -1,0 +1,142 @@
+unit Unit5;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.Imaging.pngimage,
+  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Buttons;
+
+type
+  TForm5 = class(TForm)
+    MainMenu1: TMainMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    Image1: TImage;
+    Memo1: TMemo;
+    BitBtn1: TBitBtn;
+    BitBtn2: TBitBtn;
+    procedure CreateParams(var Params: TCreateParams); override;
+    procedure FormShow(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
+  private
+    procedure LoadRecords;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form5: TForm5;
+
+implementation
+Uses Unit1, Unit3;
+
+{$R *.dfm}
+
+procedure TForm5.BitBtn1Click(Sender: TObject);
+var
+  FileName: string;
+  FileHandle: TextFile;
+begin
+  FileName := 'snake_record.txt'; // имя файла, который будем очищать
+  AssignFile(FileHandle, FileName);
+  try
+    Rewrite(FileHandle); // Открываем файл в режиме записи, чтобы очистить его
+  finally
+    CloseFile(FileHandle);
+  end;
+
+  Memo1.Clear; // Очищаем Memo1
+  ShowMessage('Файл с рекордами очищен.');
+end;
+
+procedure TForm5.BitBtn2Click(Sender: TObject);
+begin
+  Form5.Hide;
+  Form1.Show;
+end;
+
+procedure TForm5.CreateParams(var Params: TCreateParams); // процедура для того чтобы ярлык в панели задач не пропадал
+begin
+  inherited;
+  Params.ExStyle := Params.ExStyle or WS_EX_APPWINDOW;
+  Params.WndParent := 0;
+end;
+
+procedure TForm5.LoadRecords;
+var
+  FileName: string;
+  FileHandle: TextFile;
+  Line: string;
+  RecordsList: TStringList;
+  i: Integer;
+  Score1, Score2: Integer; // Объявляем переменные для сравнения
+begin
+  FileName := 'snake_record.txt'; // имя файла, из которого будем считывать рекорды
+  RecordsList := TStringList.Create;
+  try
+    if FileExists(FileName) then
+    begin
+      AssignFile(FileHandle, FileName);
+      Reset(FileHandle);
+      try
+        while not Eof(FileHandle) do
+        begin
+          Readln(FileHandle, Line);
+          // Извлекаем очки из строки
+          Score1 := StrToIntDef(Trim(Copy(Line, Pos('-', Line) + 1, MaxInt)), 0);
+          // Добавляем строку в TStringList вместе с очками для сортировки
+          RecordsList.AddObject(Line, TObject(Score1));
+        end;
+      finally
+        CloseFile(FileHandle);
+      end;
+
+      // Сортируем TStringList по очкам по убыванию
+      RecordsList.CustomSort(
+        function (Index1, Index2: Integer): Integer
+        begin
+          Score1 := Integer(RecordsList.Objects[Index1]);
+          Score2 := Integer(RecordsList.Objects[Index2]);
+          if Score1 > Score2 then
+            Result := -1
+          else if Score1 < Score2 then
+            Result := 1
+          else
+            Result := 0;
+        end
+      );
+
+      // Очищаем Memo1 и добавляем отсортированные записи
+      Memo1.Lines.BeginUpdate;
+      try
+        Memo1.Clear;
+        for i := 0 to RecordsList.Count - 1 do
+          Memo1.Lines.Add(RecordsList[i]);
+      finally
+        Memo1.Lines.EndUpdate;
+      end;
+    end
+    else
+    begin
+      ShowMessage('Файл с рекордами не найден.');
+    end;
+  finally
+    RecordsList.Free;
+  end;
+end;
+
+
+
+procedure TForm5.FormShow(Sender: TObject);
+begin
+  LoadRecords; // Загружаем записи при показе формы
+end;
+
+end.
+
